@@ -253,6 +253,51 @@ def get_all_dispatch_batches(destination=None, vehicle_number=None, status=None)
     session.close()
     return response
 
+
+# Endpoint 7: GET /analytics
+# Purpose: Get warehouse statistics
+
+def get_analytics():
+
+    session = Session(engine)
+    total_packages = session.query(Package).count()
+
+    pending_packages = session.query(Package).filter(
+        Package.status == "Pending"
+    ).count()
+
+    assigned_packages = session.query(Package).filter(
+        Package.status == "Assigned"
+    ).count()
+
+    pending_packages = pending_packages + assigned_packages
+
+    dispatched_packages = session.query(Package).filter(
+        Package.status == "Dispatched"
+    ).count()
+
+    packages = session.query(Package).all()
+
+    destination_count = {}
+
+    for package in packages:
+        destination = package.destination
+
+        if destination in destination_count:
+            destination_count[destination] += 1
+        else:
+            destination_count[destination] = 1
+    response = {
+        "total_packages_received": total_packages,
+        "pending_dispatch": pending_packages,
+        "dispatched": dispatched_packages,
+        "destination_wise_count": destination_count
+    }
+
+    session.close()
+    return response
+
+
 # Endpoint 8: POST /dispatch-batches
 # Purpose: Create a dispatch batch and assign packages
 

@@ -155,6 +155,21 @@ def get_all_dispatch_batches(
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     return functions.get_all_dispatch_batches(destination=destination, vehicle_number=vehicle_number, status=status)
 
+# Endpoint 7: GET /analytics
+# Purpose: Get analytics data
+
+@app.get("/analytics")
+def get_analytics(token: str = Header(None)):
+
+    username = function.verify_token(token=token,token_type="access")
+
+    if not username:
+        raise HTTPException(status_code=401,detail="Invalid or expired token")
+
+    analytics = function.get_analytics()
+    return analytics
+
+
 # Endpoint 8: POST /dispatch-batches
 # Purpose: Create a dispatch batch and assign packages
 
@@ -167,7 +182,7 @@ def add_dispatch_batch(batch_data: BatchIn, token = Header(None)):
         batch_data.batch_name,
         batch_data.destination,
         batch_data.vehicle_number,
-        batch_data.dispatch_date,
+        str(batch_data.dispatch_date),
         batch_data.package_ids
     )
     if result == "package_not_found":
